@@ -1,4 +1,5 @@
 import { LineWebhookTester } from "@/components/line-webhook-tester";
+import type { User } from "@/lib/types";
 import { getActiveAdminRecipients, getLineIntegration } from "@/lib/store";
 
 export const dynamic = "force-dynamic";
@@ -43,7 +44,7 @@ export default async function LinePage() {
           <div className="notification-item">
             <p className="notification-title">Recipients หลัก</p>
             <p className="notification-message">
-              {recipients.map((user) => user.name).join(", ") || "ยังไม่มี recipient"}
+              {recipients.map((user: User) => user.name).join(", ") || "ยังไม่มี recipient"}
             </p>
           </div>
 
