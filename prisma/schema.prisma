@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleKey {
+  ADMIN
+  MANAGER
+  STAFF
+}
+
+enum MovementType {
+  IN
+  OUT
+  ADJUST
+  RETURN
+}
+
+enum MovementStatus {
+  APPROVED
+  PENDING
+  REJECTED
+}
+
+enum NotificationKind {
+  LOW_STOCK
+  REMINDER
+  APPROVAL_REQUEST
+  SYSTEM
+}
+
+enum NotificationStatus {
+  OPEN
+  SENT
+  RESOLVED
+}
+
+model Role {
+  id          String   @id @default(cuid())
+  key         RoleKey  @unique
+  name        String
+  permissions String[]
+  users       User[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model User {
+  id          String   @id @default(cuid())
+  name        String
+  email       String?  @unique
+  lineUserId  String?  @unique
+  active      Boolean  @default(true)
+  roleId      String
+  role        Role     @relation(fields: [roleId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdMovements StockMovement[] @relation("CreatedMovements")
+  approvedMovements StockMovement[] @relation("ApprovedMovements")
+  notifications Notification[] @relation("NotificationRecipient")
+}
+
+model Product {
+  id                String           @id @default(cuid())
+  sku               String           @unique
+  name              String
+  category          String
+  unit              String
+  location          String           @default("Main Warehouse")
+  currentStock      Int              @default(0)
+  lowStockThreshold Int              @default(0)
+  reorderPoint      Int              @default(0)
+  active            Boolean          @default(true)
+  movements         StockMovement[]
+  rules             LowStockRule[]
+  notifications     Notification[]
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model StockMovement {
+  id              String         @id @default(cuid())
+  productId       String
+  product         Product        @relation(fields: [productId], references: [id])
+  type            MovementType
+  quantity        Int
+  stockAfter      Int
+  note            String?
+  reason          String?
+  status          MovementStatus @default(APPROVED)
+  createdById     String?
+  createdBy       User?          @relation("CreatedMovements", fields: [createdById], references: [id])
+  approvedById    String?
+  approvedBy      User?          @relation("ApprovedMovements", fields: [approvedById], references: [id])
+  source          String         @default("dashboard")
+  lineMessageId   String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model LowStockRule {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  threshold   Int
+  repeatDaily Boolean  @default(true)
+  active      Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Notification {
+  id            String              @id @default(cuid())
+  kind          NotificationKind
+  status        NotificationStatus   @default(OPEN)
+  title         String
+  message       String
+  productId     String?
+  product       Product?             @relation(fields: [productId], references: [id])
+  recipientId   String?
+  recipient     User?                @relation("NotificationRecipient", fields: [recipientId], references: [id])
+  channel       String               @default("line")
+  dedupeKey     String?              @unique
+  sentAt        DateTime?
+  resolvedAt    DateTime?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+}
+
+model LineIntegration {
+  id                String   @id @default(cuid())
+  channelName       String
+  webhookEnabled    Boolean  @default(false)
+  autoApproveStock  Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

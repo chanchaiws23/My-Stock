@@ -1,122 +1,94 @@
 # My Stock
 
-ระบบเว็บสต๊อกสินค้าแบบคลังเดียวสำหรับทีมงานหลายระดับสิทธิ์ พร้อม dashboard, แจ้งเตือนสต๊อกขั้นต่ำ, และเชื่อมต่อ LINE Official Account เพื่อรับการแจ้งเตือนและคำสั่งจัดการสต๊อกจากแชต
+เว็บสต๊อกสินค้าแบบคลังเดียวสำหรับผู้ใช้หลายบทบาท พร้อม dashboard, แจ้งเตือนสต๊อกขั้นต่ำ, และ LINE workflow สำหรับรับคำสั่งและเตือนสินค้าใกล้หมด
 
-## ภาพรวม
+## สิ่งที่ทำได้แล้ว
 
-โปรเจกต์นี้ออกแบบมาเพื่อให้ทีมงานสามารถ:
-
-- ดูยอดคงเหลือสินค้าแบบเรียลไทม์
-- ติดตามสินค้าที่ใกล้ถึงจุดสต๊อกขั้นต่ำ
-- บันทึกการเคลื่อนไหวของสต๊อกแบบ audit trail
-- รับแจ้งเตือนผ่าน LINE เมื่อสินค้าใกล้หมด
-- เพิ่มสต๊อกหรือส่งคำขอเพิ่มสต๊อกจาก LINE ได้
-
-## ฟีเจอร์หลัก
-
-- Dashboard สำหรับสรุปยอดสต๊อกและสินค้าใกล้หมด
-- จัดการสินค้า, หมวดหมู่, และระดับสต๊อกขั้นต่ำ
-- บันทึกประวัติรับเข้า, จ่ายออก, ปรับยอด, และเหตุผลของการปรับปรุง
-- ระบบผู้ใช้หลายบทบาท: `Admin`, `Manager`, `Staff`
-- แจ้งเตือนสต๊อกต่ำผ่าน LINE แบบครั้งแรกและเตือนซ้ำรายวัน
-- รองรับคำสั่ง LINE ทั้งแบบพิมพ์ข้อความและ quick reply
-- แยก flow การอัปเดตสต๊อกทันทีและ flow ขออนุมัติสำหรับรายการที่เสี่ยง
+- Dashboard สรุปยอดสินค้า, สินค้าใกล้หมด, และรายการที่รออนุมัติ
+- หน้าจัดการสินค้าและการทำ stock movement
+- คิวอนุมัติสำหรับรายการที่เสี่ยงหรือมาจากสิทธิ์ต่ำ
+- หน้า LINE webhook simulator สำหรับทดสอบคำสั่ง text และ quick reply
+- หน้าตั้งค่าผู้ใช้, บทบาท, และตัวกระตุ้น reminder รายวัน
+- API routes สำหรับ dashboard, products, movements, notifications, และ LINE integration
+- Prisma schema สำหรับ PostgreSQL พร้อมโครง entity ตามสเปก
 
 ## Tech Stack
 
-- Frontend: Next.js
-- API: Next.js API routes
-- Database: PostgreSQL
-- Integration: LINE Messaging API
+- Next.js 16
+- React 19
+- TypeScript
+- PostgreSQL schema ผ่าน Prisma
+- LINE Messaging API skeleton
 
-## โครงสร้างข้อมูลหลัก
+## โครงสร้างโปรเจกต์
 
-ระบบจะอิง entity หลักดังนี้:
+- `app/` - หน้าเว็บและ API routes
+- `components/` - ฟอร์มและส่วน UI ที่ใช้ซ้ำ
+- `lib/` - business logic, mock store, LINE parser, และ stock utilities
+- `prisma/schema.prisma` - schema สำหรับ PostgreSQL
 
-- `users`
-- `roles`
-- `products`
-- `stock_movements`
-- `low_stock_rules`
-- `notifications`
-- `line_integration`
+## การรันโปรเจกต์
 
-## แนวทางการทำงานของระบบ
-
-### Dashboard
-
-หน้าหลักจะแสดง:
-
-- KPI สำคัญ
-- รายการสินค้าคงเหลือน้อย
-- ประวัติการเคลื่อนไหวของสต๊อก
-- สถานะการแจ้งเตือนล่าสุด
-
-### Stock Workflow
-
-รายการหลักที่ระบบรองรับ:
-
-- รับเข้า
-- จ่ายออก
-- ปรับยอด
-- คืนสินค้า
-- บันทึกเหตุผลและผู้ทำรายการทุกครั้ง
-
-### LINE Workflow
-
-LINE จะใช้ 2 รูปแบบร่วมกัน:
-
-- พิมพ์ข้อความเพื่อเพิ่มสต๊อกหรือส่งคำสั่ง
-- quick reply เพื่อช่วยลดความผิดพลาดในการกรอก
-
-กติกาการทำงาน:
-
-- ถ้าผู้ใช้มีสิทธิ์พอ ระบบจะอัปเดตสต๊อกทันที
-- ถ้ารายการมีความเสี่ยงหรือผู้ใช้สิทธิ์ต่ำกว่า ระบบจะส่งเป็นคำขออนุมัติ
-- เมื่อสต๊อกต่ำกว่าค่าขั้นต่ำ ระบบจะส่งแจ้งเตือนครั้งแรกและแจ้งเตือนซ้ำรายวันจนกว่าจะเติมสต๊อก
-
-## การติดตั้งและเริ่มต้นใช้งาน
-
-> หมายเหตุ: repo นี้ยังเป็นโครงเริ่มต้น การติดตั้งจริงจะเพิ่มตามการพัฒนาระบบในขั้นถัดไป
-
-### สิ่งที่ควรมี
-
-- Node.js
-- PostgreSQL
-- LINE Official Account / Messaging API credentials
-
-### ตัวแปรแวดล้อมที่คาดว่าจะใช้
+1. ติดตั้ง dependencies
 
 ```bash
-DATABASE_URL=
-LINE_CHANNEL_ACCESS_TOKEN=
-LINE_CHANNEL_SECRET=
-APP_URL=
+npm install
 ```
 
-### ขั้นตอนโดยสรุป
+2. ตั้งค่า environment
 
-1. ติดตั้ง dependencies ของโปรเจกต์
-2. ตั้งค่า `.env`
-3. เชื่อมต่อฐานข้อมูล PostgreSQL
-4. ตั้งค่า webhook ของ LINE
-5. เริ่มใช้งาน dashboard และทดสอบ flow การแจ้งเตือน
+```bash
+cp .env.example .env
+```
 
-## ขอบเขตเวอร์ชันแรก
+3. เริ่ม development server
 
-- ใช้คลังเดียวก่อน
-- รองรับผู้ใช้หลายบทบาท
-- เน้น dashboard + low stock alert + LINE integration
-- โครงข้อมูลเตรียมไว้ขยายหลายคลังในอนาคต
+```bash
+npm run dev
+```
 
-## Roadmap
+4. เปิดใช้งานที่ `http://localhost:3000`
 
-- สร้าง schema ฐานข้อมูลและ migration
-- สร้างหน้า dashboard และหน้าจัดการสินค้า
-- สร้าง auth และ role-based access control
-- ทำ LINE webhook และ command parser
-- ทำระบบ notification scheduler สำหรับ low stock reminder
+## Environment Variables
 
-## สถานะโปรเจกต์
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/my_stock"
+LINE_CHANNEL_ACCESS_TOKEN=""
+LINE_CHANNEL_SECRET=""
+APP_URL="http://localhost:3000"
+```
 
-โปรเจกต์อยู่ในช่วงเริ่มต้น และ README นี้เป็นจุดตั้งต้นสำหรับการพัฒนาใน branch แยก
+## LINE Command Examples
+
+- `stock SKU-001`
+- `add SKU-001 10 รับเข้าออเดอร์`
+- `out SKU-003 2 ใช้หน้าร้าน`
+- `adjust SKU-002 5 แก้ยอด`
+- `approve MOV-123`
+
+## API Endpoints
+
+- `GET /api/health`
+- `GET /api/dashboard`
+- `GET|POST /api/products`
+- `PATCH /api/products/:id`
+- `GET|POST /api/movements`
+- `POST /api/movements/:id/approve`
+- `POST /api/movements/:id/reject`
+- `GET|POST /api/notifications`
+- `POST /api/line/webhook`
+- `GET|PATCH /api/line/integration`
+
+## หมายเหตุการทำงาน
+
+- ปัจจุบัน runtime ใช้ in-memory demo store เพื่อให้ทดลอง UI และ flow ได้ทันที
+- โครง PostgreSQL ถูกเตรียมไว้ใน Prisma schema แล้ว
+- เมื่อเชื่อมต่อฐานข้อมูลจริง สามารถย้าย data layer ไปใช้ Prisma client ต่อได้โดยตรง
+
+## Roadmap ถัดไป
+
+- เชื่อม Prisma client กับ PostgreSQL จริง
+- เพิ่ม authentication และ session management
+- ทำ background scheduler สำหรับ reminder รายวัน
+- เพิ่ม audit/approval dashboard แบบละเอียดขึ้น
+- เชื่อม LINE OA webhook จริงด้วย signature verification
