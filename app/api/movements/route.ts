@@ -13,7 +13,7 @@ const movementSchema = z.object({
 });
 
 export async function GET() {
-  return NextResponse.json({ items: getMovements() });
+  return NextResponse.json({ items: await getMovements() });
 }
 
 export async function POST(request: Request) {
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const result = createMovement({
+    const result = await createMovement({
       ...parsed.data,
       source: "dashboard",
     });

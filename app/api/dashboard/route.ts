@@ -2,5 +2,5 @@ import { getDashboardSummary } from "@/lib/store";
 import { NextResponse } from "next/server";
 
 export async function GET() {
-  return NextResponse.json(getDashboardSummary());
+  return NextResponse.json(await getDashboardSummary());
 }

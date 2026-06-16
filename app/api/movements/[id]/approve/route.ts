@@ -5,7 +5,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ id
   const { id } = await params;
 
   try {
-    const movement = approveMovementRequest(id);
+    const movement = await approveMovementRequest(id);
     return NextResponse.json({
       message: `อนุมัติรายการ ${movement.id} เรียบร้อย`,
       movement,

@@ -2,8 +2,10 @@ import { MetricCard } from "@/components/metric-card";
 import { getDashboardSummary } from "@/lib/store";
 import { formatThaiDateTime, formatNumber } from "@/lib/stock";
 
-export default function DashboardPage() {
-  const summary = getDashboardSummary();
+export const dynamic = "force-dynamic";
+
+export default async function DashboardPage() {
+  const summary = await getDashboardSummary();
 
   return (
     <div>

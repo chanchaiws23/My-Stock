@@ -14,7 +14,7 @@ const productSchema = z.object({
 });
 
 export async function GET() {
-  return NextResponse.json({ items: getProducts() });
+  return NextResponse.json({ items: await getProducts() });
 }
 
 export async function POST(request: Request) {
@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const product = addProduct(parsed.data);
+    const product = await addProduct(parsed.data);
     return NextResponse.json({
       message: `เพิ่มสินค้า ${product.name} เรียบร้อย`,
       product,

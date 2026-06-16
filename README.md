@@ -1,6 +1,6 @@
 # My Stock
 
-เว็บสต๊อกสินค้าแบบคลังเดียวสำหรับผู้ใช้หลายบทบาท พร้อม dashboard, แจ้งเตือนสต๊อกขั้นต่ำ, และ LINE workflow สำหรับรับคำสั่งและเตือนสินค้าใกล้หมด
+ระบบเว็บสต๊อกสินค้าแบบคลังเดียวสำหรับผู้ใช้หลายบทบาท พร้อม dashboard, แจ้งเตือนสต๊อกขั้นต่ำ, และ LINE workflow สำหรับรับคำสั่งและเตือนสินค้าใกล้หมด
 
 ## สิ่งที่ทำได้แล้ว
 
@@ -10,22 +10,23 @@
 - หน้า LINE webhook simulator สำหรับทดสอบคำสั่ง text และ quick reply
 - หน้าตั้งค่าผู้ใช้, บทบาท, และตัวกระตุ้น reminder รายวัน
 - API routes สำหรับ dashboard, products, movements, notifications, และ LINE integration
-- Prisma schema สำหรับ PostgreSQL พร้อมโครง entity ตามสเปก
+- Prisma schema สำหรับ PostgreSQL พร้อม migration แรก
 
 ## Tech Stack
 
 - Next.js 16
 - React 19
 - TypeScript
-- PostgreSQL schema ผ่าน Prisma
+- PostgreSQL ผ่าน Prisma 7
 - LINE Messaging API skeleton
 
 ## โครงสร้างโปรเจกต์
 
 - `app/` - หน้าเว็บและ API routes
 - `components/` - ฟอร์มและส่วน UI ที่ใช้ซ้ำ
-- `lib/` - business logic, mock store, LINE parser, และ stock utilities
+- `lib/` - business logic, Prisma repository, LINE parser, และ stock utilities
 - `prisma/schema.prisma` - schema สำหรับ PostgreSQL
+- `prisma/migrations/` - migration SQL แรกของโปรเจกต์
 
 ## การรันโปรเจกต์
 
@@ -41,13 +42,21 @@ npm install
 cp .env.example .env
 ```
 
-3. เริ่ม development server
+3. สร้าง client และ migration
+
+```bash
+npm run db:generate
+npm run db:migrate:dev -- --name init
+npm run db:seed
+```
+
+4. เริ่ม development server
 
 ```bash
 npm run dev
 ```
 
-4. เปิดใช้งานที่ `http://localhost:3000`
+5. เปิดใช้งานที่ `http://localhost:3000`
 
 ## Environment Variables
 
@@ -57,6 +66,14 @@ LINE_CHANNEL_ACCESS_TOKEN=""
 LINE_CHANNEL_SECRET=""
 APP_URL="http://localhost:3000"
 ```
+
+## Prisma 7 Notes
+
+- `DATABASE_URL` ถูกอ่านจาก [prisma.config.ts](C:\Users\Acer\Documents\My-Stock\prisma.config.ts) ไม่ได้ใส่ใน `schema.prisma` แล้ว
+- `db:generate` ใช้สร้าง Prisma Client
+- `db:migrate:dev` ใช้สร้างและ apply migration ในเครื่อง
+- `db:migrate:deploy` ใช้ apply migration บน Railway/production
+- `db:seed` ใช้เติมข้อมูลตั้งต้นลงฐานข้อมูล
 
 ## LINE Command Examples
 
@@ -81,13 +98,12 @@ APP_URL="http://localhost:3000"
 
 ## หมายเหตุการทำงาน
 
-- ปัจจุบัน runtime ใช้ in-memory demo store เพื่อให้ทดลอง UI และ flow ได้ทันที
-- โครง PostgreSQL ถูกเตรียมไว้ใน Prisma schema แล้ว
-- เมื่อเชื่อมต่อฐานข้อมูลจริง สามารถย้าย data layer ไปใช้ Prisma client ต่อได้โดยตรง
+- backend ตอนนี้อ่าน/เขียนผ่าน Prisma และ PostgreSQL จริงแล้ว
+- `prisma/seed.ts` ใช้เติมข้อมูลเริ่มต้นสำหรับ dev หรือฐานข้อมูลใหม่
+- ถ้า Railway ยังไม่มี database ให้สร้าง Postgres service ก่อน แล้วค่อยใส่ `DATABASE_URL`
 
 ## Roadmap ถัดไป
 
-- เชื่อม Prisma client กับ PostgreSQL จริง
 - เพิ่ม authentication และ session management
 - ทำ background scheduler สำหรับ reminder รายวัน
 - เพิ่ม audit/approval dashboard แบบละเอียดขึ้น

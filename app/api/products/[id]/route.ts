@@ -20,7 +20,11 @@ export async function PATCH(request: Request, { params }: { params: Promise<{ id
   }
 
   try {
-    const product = updateProductThreshold(id, parsed.data.lowStockThreshold, parsed.data.reorderPoint);
+    const product = await updateProductThreshold(
+      id,
+      parsed.data.lowStockThreshold,
+      parsed.data.reorderPoint
+    );
     return NextResponse.json({
       message: `อัปเดต threshold ของ ${product.name} แล้ว`,
       product,

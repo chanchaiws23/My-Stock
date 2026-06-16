@@ -9,7 +9,7 @@ const integrationSchema = z.object({
 });
 
 export async function GET() {
-  return NextResponse.json(getLineIntegration());
+  return NextResponse.json(await getLineIntegration());
 }
 
 export async function PATCH(request: Request) {
@@ -22,6 +22,6 @@ export async function PATCH(request: Request) {
 
   return NextResponse.json({
     message: "อัปเดต LINE integration แล้ว",
-    integration: setLineIntegration(parsed.data),
+    integration: await setLineIntegration(parsed.data),
   });
 }

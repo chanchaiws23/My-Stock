@@ -1,9 +1,11 @@
 import { LineWebhookTester } from "@/components/line-webhook-tester";
 import { getActiveAdminRecipients, getLineIntegration } from "@/lib/store";
 
-export default function LinePage() {
-  const integration = getLineIntegration();
-  const recipients = getActiveAdminRecipients();
+export const dynamic = "force-dynamic";
+
+export default async function LinePage() {
+  const integration = await getLineIntegration();
+  const recipients = await getActiveAdminRecipients();
 
   return (
     <div>

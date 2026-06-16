@@ -3,7 +3,6 @@ import {
   findProductBySkuSafe,
   findUserByLineUserId,
   getPendingMovements,
-  getProducts,
   handleApprovalCommand,
 } from "@/lib/store";
 import type { MovementType } from "@/lib/types";
@@ -155,16 +154,16 @@ function buildHelpText() {
   ].join("\n");
 }
 
-export function handleLineIncomingPayload(payload: unknown) {
+export async function handleLineIncomingPayload(payload: unknown) {
   const events = Array.isArray(payload)
     ? (payload as LineIncomingEvent[])
     : Array.isArray((payload as { events?: LineIncomingEvent[] }).events)
       ? ((payload as { events: LineIncomingEvent[] }).events ?? [])
       : [];
 
-  const results = events.map((event) => {
+  const results = await Promise.all(events.map(async (event) => {
     const userId = event.source?.userId;
-    const user = userId ? findUserByLineUserId(userId) : undefined;
+    const user = userId ? await findUserByLineUserId(userId) : undefined;
     const text = event.type === "postback" ? event.postback?.data ?? "" : event.message?.text ?? "";
     const command =
       event.type === "postback" ? parseQuickReplyPayload(text) : parseLineCommand(text);
@@ -178,7 +177,7 @@ export function handleLineIncomingPayload(payload: unknown) {
     }
 
     if (command.kind === "stock") {
-      const product = findProductBySkuSafe(command.sku);
+      const product = await findProductBySkuSafe(command.sku);
       if (!product) {
         return {
           ok: false,
@@ -195,7 +194,7 @@ export function handleLineIncomingPayload(payload: unknown) {
     }
 
     if (command.kind === "approve") {
-      const approval = handleApprovalCommand(command.movementId, user?.id);
+      const approval = await handleApprovalCommand(command.movementId, user?.id);
       return {
         ok: true,
         kind: "approve" as const,
@@ -204,7 +203,7 @@ export function handleLineIncomingPayload(payload: unknown) {
       };
     }
 
-    const created = createMovement({
+    const created = await createMovement({
       sku: command.sku,
       type: command.type,
       quantity: command.quantity,
@@ -219,12 +218,12 @@ export function handleLineIncomingPayload(payload: unknown) {
       kind: "movement" as const,
       message: created.requiresApproval
         ? `${command.sku} ถูกส่งเข้าคิวอนุมัติ`
-        : `${getProducts().find((item) => item.sku === command.sku)?.name ?? command.sku} อัปเดตสต๊อกแล้ว`,
+        : `${created.product.name} อัปเดตสต๊อกแล้ว`,
       movementId: created.movement.id,
       requiresApproval: created.requiresApproval,
-      pendingCount: getPendingMovements().length,
+      pendingCount: (await getPendingMovements()).length,
     };
-  });
+  }));
 
   return {
     ok: true,

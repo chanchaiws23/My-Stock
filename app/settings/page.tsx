@@ -1,10 +1,12 @@
 import { ReminderTrigger } from "@/components/reminder-trigger";
 import { getLineIntegration, getRoles, getUsers } from "@/lib/store";
 
-export default function SettingsPage() {
-  const roles = getRoles();
-  const users = getUsers();
-  const lineIntegration = getLineIntegration();
+export const dynamic = "force-dynamic";
+
+export default async function SettingsPage() {
+  const roles = await getRoles();
+  const users = await getUsers();
+  const lineIntegration = await getLineIntegration();
 
   return (
     <div>

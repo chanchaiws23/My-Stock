@@ -3,11 +3,13 @@ import { PendingApprovals } from "@/components/pending-approvals";
 import { getMovements, getPendingMovements, getProducts, getUsers } from "@/lib/store";
 import { formatThaiDateTime, formatNumber } from "@/lib/stock";
 
-export default function MovementsPage() {
-  const products = getProducts();
-  const users = getUsers();
-  const movements = getMovements();
-  const pendingMovements = getPendingMovements();
+export const dynamic = "force-dynamic";
+
+export default async function MovementsPage() {
+  const products = await getProducts();
+  const users = await getUsers();
+  const movements = await getMovements();
+  const pendingMovements = await getPendingMovements();
 
   return (
     <div>

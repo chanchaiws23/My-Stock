@@ -7,7 +7,7 @@ const notificationActionSchema = z.object({
 });
 
 export async function GET() {
-  return NextResponse.json({ items: getNotifications() });
+  return NextResponse.json({ items: await getNotifications() });
 }
 
 export async function POST(request: Request) {
@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "คำสั่งไม่ถูกต้อง" }, { status: 400 });
   }
 
-  const generated = generateLowStockReminders();
+  const generated = await generateLowStockReminders();
   return NextResponse.json({
     message: `สร้าง reminder สำหรับสินค้าใกล้หมด ${generated} รายการ`,
   });

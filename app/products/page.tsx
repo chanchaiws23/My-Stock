@@ -2,8 +2,10 @@ import { ProductForm } from "@/components/product-form";
 import { getProducts } from "@/lib/store";
 import { formatNumber } from "@/lib/stock";
 
-export default function ProductsPage() {
-  const products = getProducts();
+export const dynamic = "force-dynamic";
+
+export default async function ProductsPage() {
+  const products = await getProducts();
 
   return (
     <div>
